@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Click &amp; Leva - Home</title>
+  <link rel="stylesheet" href="estilo.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="logo">Click &amp; Leva</div>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Início</a></li>
+        <li><a href="produtos.html">Produtos</a></li>
+        <li><a href="carrinho.html">Carrinho</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Bem-vindo ao Click &amp; Leva</h1>
+      <p>A sua loja online de eletrônicos com as melhores ofertas e variedades!</p>
+      <a href="produtos.html" class="btn-primary">Confira nossos produtos</a>
+    </section>
+
+    <section class="promo">
+      <h2>Promoções Exclusivas</h2>
+      <div class="promo-items">
+        <div class="promo-card">
+          <img src="https://i.pinimg.com/736x/17/59/91/1759915f459826432bd8831cb13efc56.jpg" alt="Fone de Ouvido" />
+          <h3>Fone de Ouvido Bluetooth</h3>
+          <p><span class="price-old">R$299,90</span> <span class="price-new">R$199,90</span></p>
+        </div>
+        <div class="promo-card">
+          <img src="https://i.pinimg.com/736x/ca/30/53/ca30532aa27208d33e9019c8053c9a06.jpg" alt="Relógio Smart" />
+          <h3>Relógio Smartwatch</h3>
+          <p><span class="price-old">R$599,90</span> <span class="price-new">R$449,90</span></p>
+        </div>
+        <div class="promo-card">
+          <img src="https://i.pinimg.com/736x/bb/e0/92/bbe092a657d503647cc0bda659c2cbb7.jpg" alt="Notebook" />
+          <h3>Notebook Gamer</h3>
+          <p><span class="price-old">R$7.499,90</span> <span class="price-new">R$6.799,90</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="new-arrivals">
+      <h2>Novidades</h2>
+      <div class="promo-items">
+        <div class="promo-card">
+          <img src="https://i.pinimg.com/736x/d5/71/c3/d571c3eedc6b890516b267650e1d9a70.jpg" alt="Caixa de Som" />
+          <h3>Caixa de Som Bluetooth</h3>
+          <p><span class="price-new">R$299,90</span></p>
+        </div>
+        <div class="promo-card">
+          <img src="https://i.pinimg.com/736x/e2/64/f1/e264f10ed0bb2c7b906d70bd04cf010d.jpg" alt="Câmera Digital" />
+          <h3>Câmera Digital Compacta</h3>
+          <p><span class="price-new">R$1.199,90</span></p>
+        </div>
+        <div class="promo-card">
+          <img src="https://i.pinimg.com/736x/7e/ea/13/7eea13cf10d8097bddd44f612dd012b2.jpg" alt="Teclado Mecânico" />
+          <h3>Teclado Mecânico RGB</h3>
+          <p><span class="price-new">R$399,90</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="featured-brands">
+      <h2>Marcas em Destaque</h2>
+      <div class="brands-logos">
+        <img src="Assets/marca1.png" alt="Marca 1" />
+        <img src="Assets/marca2.png" alt="Marca 2" />
+        <img src="Assets/marca3.png" alt="Marca 3" />
+        <img src="Assets/marca4.png" alt="Marca 4" />
+      </div>
+    </section>
+
+    <section class="testimonials">
+      <h2>O que nossos clientes dizem</h2>
+      <div class="testimonials-container">
+        <article class="testimonial-card">
+          <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Cliente 1" />
+          <h3>Carla M.</h3>
+          <div class="stars">★★★★★</div>
+          <p>"Comprei um fone bluetooth e a entrega foi super rápida. Produto de excelente qualidade!"</p>
+        </article>
+        <article class="testimonial-card">
+          <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="Cliente 2" />
+          <h3>Luiz S.</h3>
+          <div class="stars">★★★★☆</div>
+          <p>"Variedade imensa de produtos e preços muito bons. Recomendo para todos!"</p>
+        </article>
+        <article class="testimonial-card">
+          <img src="https://randomuser.me/api/portraits/women/12.jpg" alt="Cliente 3" />
+          <h3>Ana P.</h3>
+          <div class="stars">★★★★★</div>
+          <p>"A interface do site é muito intuitiva e o atendimento excelente."</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="newsletter">
+      <h2>Assine nossa newsletter</h2>
+      <p>Receba ofertas exclusivas direto no seu e-mail!</p>
+      <form id="newsletter-form">
+        <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required />
+        <button type="submit">Assinar</button>
+      </form>
+      <p id="newsletter-message" class="hidden"></p>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2024 Click &amp; Leva. Todos os direitos reservados.
+  </footer>
+
+  <script>
+    const form = document.getElementById('newsletter-form');
+    const message = document.getElementById('newsletter-message');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const emailInput = form.email.value.trim();
+
+      if (emailInput === '') {
+        message.textContent = 'Por favor, insira um e-mail válido.';
+        message.classList.remove('hidden');
+        message.style.color = 'red';
+        return;
+      }
+
+      message.textContent = 'Obrigado por assinar nossa newsletter!';
+      message.classList.remove('hidden');
+      message.style.color = '#3446eb';
+      form.reset();
+    });
+  </script>
+</body>
+</html>
+

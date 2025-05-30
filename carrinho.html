@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Click &amp; Leva - Carrinho</title>
+    <link rel="stylesheet" href="carrinho.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">Click &amp; Leva</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="produtos.html">Produtos</a></li>
+                <li><a href="carrinho.html" class="active">Carrinho (<span id="cart-count">0</span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="cart-section">
+            <h1>Carrinho de Compras</h1>
+            <div class="cart-container" id="cart-container">
+                <!-- Produtos do carrinho serão carregados aqui -->
+            </div>
+            <div id="empty-cart-msg" class="hidden">Seu carrinho está vazio.</div>
+            <div class="total-price" id="total-price">Total: R$0,00</div>
+            <button id="checkout-button" class="hidden">Finalizar Compra</button>
+        </section>
+    </main>
+    <footer>
+        &copy; 2024 Click &amp; Leva. Todos os direitos reservados.
+    </footer>
+    <script>
+        // O mesmo conjunto de dados de produtos como em produtos.html
+        const products = [
+            { id: 1, name: "Fone de Ouvido Bluetooth", price: 199.90, image: "https://via.placeholder.com/100?text=Fone" },
+            { id: 2, name: "Relógio Smartwatch", price: 449.90, image: "https://via.placeholder.com/100?text=Relógio" },
+            { id: 3, name: "Notebook Gamer", price: 6799.90, image: "https://via.placeholder.com/100?text=Notebook" },
+            { id: 4, name: "Teclado Mecânico RGB", price: 399.90, image: "https://via.placeholder.com/100?text=Teclado" },
+            { id: 5, name: "Câmera Digital Compacta", price: 1199.90, image: "https://via.placeholder.com/100?text=Câmera" },
+            { id: 6, name: "Caixa de Som Bluetooth", price: 299.90, image: "https://via.placeholder.com/100?text=Caixa" }
+        ];
+
+        function getCart() {
+            return JSON.parse(localStorage.getItem("cart")) || [];
+        }
+
+        function saveCart(cart) {
+            localStorage.setItem("cart", JSON.stringify(cart));
+        }
+
+        function updateCartCount() {
+            const cart = getCart();
+            const countElem = document.getElementById("cart-count");
+            const count = cart.reduce((acc, item) => acc + item.quantity, 0);
+            countElem.textContent = count;
+        }
+
+        function formatPrice(price) {
+            return "R$" + price.toFixed(2).replace('.', ',');
+        }
+
+        function renderCart() {
+            const cart = getCart();
+            const container = document.getElementById("cart-container");
+            const emptyMsg = document.getElementById("empty-cart-msg");
+            const totalPriceElem = document.getElementById("total-price");
+            const checkoutButton = document.getElementById("checkout-button");
+            container.innerHTML = "";
+
+            if (cart.length === 0) {
+                emptyMsg.classList.remove("hidden");
+                totalPriceElem.textContent = "Total: R$0,00";
+                checkoutButton.classList.add("hidden");
+                return;
+            }
+
+            emptyMsg.classList.add("hidden");
+            let total = 0;
+
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    const card = document.createElement("div");
+                    card.className = "cart-item";
+                    const totalPrice = product.price * item.quantity; // Cálculo do preço total
+                    card.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" class="product-image" />
+                        <h3>${product.name}</h3>
+                        <p>Preço Unitário: ${formatPrice(product.price)}</p>
+                        <p>Quantidade: <input type="number" value="${item.quantity}" min="1" data-id="${item.id}" class="quantity-input" /></p>
+                        <p>Preço Total: ${formatPrice(totalPrice)}</p>
+                        <button class="remove-item" data-id="${item.id}" aria-label="Remover ${product.name} do carrinho">Remover</button>
+                    `;
+                    container.appendChild(card);
+                    total += totalPrice; // Atualiza o total geral
+                }
+            });
+
+            totalPriceElem.textContent = `Total: ${formatPrice(total)}`;
+            checkoutButton.classList.remove("hidden");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderCart();
+            updateCartCount();
+
+            // Handle quantity change
+            document.getElementById("cart-container").addEventListener("input", e => {
+                if (e.target.classList.contains("quantity-input")) {
+                    const id = parseInt(e.target.getAttribute("data-id"));
+                    let cart = getCart();
+                    const item = cart.find(ci => ci.id === id);
+                    if (item) {
+                        let quantity = parseInt(e.target.value);
+                        if (quantity < 1) quantity = 1;
+                        item.quantity = quantity;
+                        saveCart(cart);
+                        renderCart();
+                        updateCartCount();
+                    }
+                }
+            });
+
+            // Handle item removal
+            document.getElementById("cart-container").addEventListener("click", e => {
+                if (e.target.classList.contains("remove-item")) {
+                    const id = parseInt(e.target.getAttribute("data-id"));
+                    const product = products.find(p => p.id === id);
+                    if(confirm(`Tem certeza que deseja remover ${product.name} do carrinho?`)) {
+                        let cart = getCart();
+                        cart = cart.filter(ci => ci.id !== id);
+                        saveCart(cart);
+                        renderCart();
+                        updateCartCount();
+                    }
+                }
+            });
+
+            // Checkout button (placeholder)
+            document.getElementById("checkout-button").addEventListener("click", () => {
+                alert("Compra finalizada! Obrigado pela preferência.");
+                localStorage.removeItem("cart");
+                renderCart();
+                updateCartCount();
+            });
+        });
+    </script>
+</body>
+</html>

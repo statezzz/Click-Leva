@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Click &amp; Leva - Produtos</title>
+  <link rel="stylesheet" href="produtos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="logo">Click &amp; Leva</div>
+      <ul class="nav-links">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="produtos.html" class="active">Produtos</a></li>
+        <li><a href="carrinho.html">Carrinho (<span id="cart-count">0</span>)</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="products-section">
+      <h1>Produtos</h1>
+
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Buscar produtos..." />
+        <ul id="autocomplete-list" class="autocomplete-items"></ul>
+      </div>
+
+      <div class="controls-bar">
+        <div class="filter-group">
+          <label for="category-filter">Categoria:</label>
+          <select id="category-filter">
+            <option value="all">Todas</option>
+            <option value="headphones">Fones de Ouvido</option>
+            <option value="smartwatches">Smartwatches</option>
+            <option value="notebooks">Notebooks</option>
+            <option value="accessories">Acessórios</option>
+            <option value="cameras">Câmeras</option>
+            <option value="speakers">Caixas de Som</option>
+          </select>
+        </div>
+        <div class="sort-group">
+          <label for="price-sort">Ordenar por preço:</label>
+          <select id="price-sort">
+            <option value="default">Padrão</option>
+            <option value="asc">Menor para Maior</option>
+            <option value="desc">Maior para Menor</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="products-container" id="products-container">
+        <!-- Products loaded by JS -->
+      </div>
+      <div id="no-products-msg" class="hidden">Nenhum produto encontrado para os filtros selecionados.</div>
+
+
+
+      <div class="reviews">
+        <h4>Avaliações</h4>
+        <div class="rating" id="star-rating">
+          <span data-value="1">☆</span>
+          <span data-value="2">☆</span>
+          <span data-value="3">☆</span>
+          <span data-value="4">☆</span>
+          <span data-value="5">☆</span>
+        </div>
+        <textarea id="review-text" placeholder="Deixe seu comentário..."></textarea>
+        <button id="submit-review">Enviar Avaliação</button>
+
+        <div id="reviews-list" class="reviews-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast">Produto adicionado ao carrinho!</div>
+
+  <footer>
+    &copy; 2024 Click &amp; Leva. Todos os direitos reservados.
+  </footer>
+
+  <script>
+    const products = [
+      {
+        id: 1,
+        name: "Fone de Ouvido Bluetooth",
+        price: 199.90,
+        category: "headphones",
+        image: "https://i.pinimg.com/736x/17/59/91/1759915f459826432bd8831cb13efc56.jpg",
+        promo: true,
+        inStock: true,
+      },
+      {
+        id: 2,
+        name: "Relógio Smartwatch",
+        price: 449.90,
+        category: "smartwatches",
+        image: "https://i.pinimg.com/736x/ca/30/53/ca30532aa27208d33e9019c8053c9a06.jpg",
+        promo: false,
+        inStock: true,
+      },
+      {
+        id: 3,
+        name: "Notebook Gamer",
+        price: 6799.90,
+        category: "notebooks",
+        image: "https://i.pinimg.com/736x/bb/e0/92/bbe092a657d503647cc0bda659c2cbb7.jpg",
+        promo: true,
+        inStock: false,
+      },
+      {
+        id: 4,
+        name: "Teclado Mecânico RGB",
+        price: 399.90,
+        category: "accessories",
+        image: "https://i.pinimg.com/736x/7e/ea/13/7eea13cf10d8097bddd44f612dd012b2.jpg",
+        promo: false,
+        inStock: true,
+      },
+      {
+        id: 5,
+        name: "Câmera Digital Compacta",
+        price: 1199.90,
+        category: "cameras",
+        image: "https://i.pinimg.com/736x/e2/64/f1/e264f10ed0bb2c7b906d70bd04cf010d.jpg",
+        promo: false,
+        inStock: true,
+      },
+      {
+        id: 6,
+        name: "Caixa de Som Bluetooth",
+        price: 299.90,
+        category: "speakers",
+        image: "https://i.pinimg.com/736x/d5/71/c3/d571c3eedc6b890516b267650e1d9a70.jpg",
+        promo: false,
+        inStock: true,
+      }
+    ];
+
+    const container = document.getElementById("products-container");
+    const noProductsMsg = document.getElementById("no-products-msg");
+    const categoryFilter = document.getElementById("category-filter");
+    const priceSort = document.getElementById("price-sort");
+    const searchInput = document.getElementById("search-input");
+    const cartCountElem = document.getElementById("cart-count");
+    const toast = document.getElementById("toast");
+    const autocompleteList = document.getElementById("autocomplete-list");
+
+    function getCart() {
+      return JSON.parse(localStorage.getItem("cart")) || [];
+    }
+
+    function saveCart(cart) {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    function updateCartCount() {
+      const cart = getCart();
+      const count = cart.reduce((acc, item) => acc + item.quantity, 0);
+      cartCountElem.textContent = count;
+    }
+
+    function formatPrice(price) {
+      return "R$" + price.toFixed(2).replace('.', ',');
+    }
+
+    function showToast() {
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2500);
+    }
+
+    function renderProducts(productList) {
+      container.innerHTML = "";
+      if(productList.length === 0) {
+        noProductsMsg.classList.remove("hidden");
+        return;
+      }
+      noProductsMsg.classList.add("hidden");
+      productList.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+          <div class="image-wrapper">
+            <img src="${p.image}" alt="${p.name}" loading="lazy" />
+            ${p.promo ? '<div class="badge">Promoção</div>' : ''}
+          </div>
+          <h3>${p.name}</h3>
+          <p>${formatPrice(p.price)}</p>
+          <p class="stock ${p.inStock ? "in-stock" : "out-stock"}">${p.inStock ? "Em Estoque" : "Esgotado"}</p>
+          <button class="add-to-cart" data-id="${p.id}" ${!p.inStock ? "disabled" : ""}>Adicionar ao Carrinho</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterSortSearchProducts() {
+      let filtered = products;
+
+      const catVal = categoryFilter.value.toLowerCase();
+      if(catVal !== "all") {
+        filtered = filtered.filter(p => p.category === catVal);
+      }
+
+      const searchVal = searchInput.value.trim().toLowerCase();
+      if(searchVal) {
+        filtered = filtered.filter(p => p.name.toLowerCase().includes(searchVal));
+      }
+
+      const sortVal = priceSort.value;
+      if(sortVal === "asc") {
+        filtered.sort((a,b) => a.price - b.price);
+      } else if(sortVal === "desc") {
+        filtered.sort((a,b) => b.price - a.price);
+      }
+
+      renderProducts(filtered);
+    }
+
+    // Autocomplete functionality
+    searchInput.addEventListener('input', () => {
+      const val = searchInput.value.toLowerCase();
+      autocompleteList.innerHTML = '';
+      if (!val) {
+        autocompleteList.style.display = 'none';
+        filterSortSearchProducts();
+        return;
+      }
+      const suggestions = products.filter(p => p.name.toLowerCase().includes(val)).slice(0,5);
+      if (suggestions.length === 0) {
+        autocompleteList.style.display = 'none';
+        filterSortSearchProducts();
+        return;
+      }
+      suggestions.forEach(p => {
+        const item = document.createElement('li');
+        item.textContent = p.name;
+        item.tabIndex = 0;
+        item.addEventListener('click', () => {
+          searchInput.value = p.name;
+          autocompleteList.style.display = 'none';
+          filterSortSearchProducts();
+        });
+        item.addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+            searchInput.value = p.name;
+            autocompleteList.style.display = 'none';
+            filterSortSearchProducts();
+          }
+        });
+        autocompleteList.appendChild(item);
+      });
+      autocompleteList.style.display = 'block';
+      filterSortSearchProducts();
+    });
+
+    document.addEventListener('click', e => {
+      if (!searchInput.contains(e.target) && !autocompleteList.contains(e.target)) {
+        autocompleteList.style.display = 'none';
+      }
+    });
+
+    container.addEventListener("click", e => {
+      if (e.target.classList.contains("add-to-cart")) {
+        const id = parseInt(e.target.getAttribute("data-id"));
+        let cart = getCart();
+        const item = cart.find(ci => ci.id === id);
+        if(item) {
+          item.quantity++;
+        } else {
+          cart.push({ id, quantity: 1 });
+        }
+        saveCart(cart);
+        updateCartCount();
+        showToast();
+      }
+    });
+
+    // Review section
+    const starContainer = document.getElementById('star-rating');
+    const stars = starContainer.querySelectorAll('span');
+    const reviewText = document.getElementById('review-text');
+    const submitBtn = document.getElementById('submit-review');
+    const reviewsList = document.getElementById('reviews-list');
+
+    let selectedRating = 0;
+
+    function highlightStars(rating) {
+      stars.forEach(star => {
+        const starValue = parseInt(star.getAttribute('data-value'));
+        if(starValue <= rating) {
+          star.textContent = '★';
+          star.style.color = '#ffc107'; // gold color
+        } else {
+          star.textContent = '☆';
+          star.style.color = '#333';
+        }
+      });
+    }
+
+    // Hover effect
+    stars.forEach(star => {
+      star.addEventListener('mouseover', () => {
+        const val = parseInt(star.getAttribute('data-value'));
+        highlightStars(val);
+      });
+      star.addEventListener('mouseout', () => {
+        highlightStars(selectedRating);
+      });
+      star.addEventListener('click', () => {
+        selectedRating = parseInt(star.getAttribute('data-value'));
+        highlightStars(selectedRating);
+      });
+    });
+
+    // Save and load reviews from localStorage
+    function getReviews() {
+      return JSON.parse(localStorage.getItem('productReviews')) || [];
+    }
+
+    function saveReview(rating, comment) {
+      const reviews = getReviews();
+      reviews.push({ rating, comment, date: new Date().toISOString() });
+      localStorage.setItem('productReviews', JSON.stringify(reviews));
+    }
+
+    function formatDate(isoStr) {
+      const date = new Date(isoStr);
+      return date.toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
+    }
+
+    function renderReviews() {
+      const reviews = getReviews();
+      if(reviews.length === 0) {
+        reviewsList.innerHTML = '<p>Nenhuma avaliação ainda.</p>';
+        return;
+      }
+      reviewsList.innerHTML = '';
+      reviews.forEach(r => {
+        const reviewEl = document.createElement('div');
+        reviewEl.classList.add('review-item');
+        reviewEl.innerHTML = `
+          <div class="review-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+          <div class="review-comment">${r.comment.replace(/\n/g, '<br>')}</div>
+          <div class="review-date">${formatDate(r.date)}</div>
+          <hr>
+        `;
+        reviewsList.appendChild(reviewEl);
+      });
+    }
+
+    submitBtn.addEventListener('click', () => {
+      const comment = reviewText.value.trim();
+      if(selectedRating === 0) {
+        alert('Por favor, selecione uma avaliação por estrelas.');
+        return;
+      }
+      if(comment.length < 5) {
+        alert('Por favor, escreva um comentário com pelo menos 5 caracteres.');
+        return;
+      }
+      saveReview(selectedRating, comment);
+      renderReviews();
+      reviewText.value = '';
+      selectedRating = 0;
+      highlightStars(0);
+      alert('Obrigado pela sua avaliação!');
+    });
+
+    categoryFilter.addEventListener("change", filterSortSearchProducts);
+    priceSort.addEventListener("change", filterSortSearchProducts);
+    searchInput.addEventListener("input", filterSortSearchProducts);
+
+    // Initial render and cart update
+    updateCartCount();
+    renderProducts(products);
+    renderReviews();
+    highlightStars(0);
+  </script>
+</body>
+</html>
